@@ -1,3 +1,5 @@
+gunicorn
+
 # Force NumPy 1.x
 numpy<2
 
