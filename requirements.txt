@@ -1,5 +1,3 @@
-torch==2.2.2+cpu
-torchaudio==2.2.2+cpu
 git+https://github.com/openai/whisper.git
 Flask~=3.1.2
 flask-cors~=6.0.1
