@@ -1,3 +1,6 @@
+# Force NumPy 1.x
+numpy<2
+
 # CPU-only PyTorch wheels
 --extra-index-url https://download.pytorch.org/whl/cpu
 
