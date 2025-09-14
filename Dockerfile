@@ -1,16 +1,17 @@
-FROM python:3.11-alpine
+# Use minimal Python image with pre-installed ML libraries
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install minimal system dependencies for alpine
-RUN apk add --no-cache \
+# Install only essential system dependencies
+RUN apt-get update && apt-get install -y \
     git \
     ffmpeg \
-    gcc \
-    musl-dev \
-    linux-headers
+    build-essential \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Copy and install requirements with cache
+# Copy and install requirements in one step
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt && \
