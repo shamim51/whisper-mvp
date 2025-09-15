@@ -1,16 +1,4 @@
-gunicorn
-
-# Force NumPy 1.x
-numpy<2
-
-# CPU-only PyTorch wheels
---extra-index-url https://download.pytorch.org/whl/cpu
-
-# CPU-only PyTorch wheels
-torch==2.2.2+cpu
-torchaudio==2.2.2+cpu
-
-git+https://github.com/openai/whisper.git
+#git+https://github.com/openai/whisper.git
 Flask~=3.1.2
 flask-cors~=6.0.1
 sympy~=1.14.0

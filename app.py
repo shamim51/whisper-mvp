@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-import whisper
+from faster_whisper import WhisperModel
 from flask_cors import CORS
 import tempfile
 import os
@@ -11,8 +11,9 @@ from Levenshtein import distance as levenshtein_distance
 app = Flask(__name__)
 CORS(app)
 
-# Load whisper model (tiny for speed)
-model = whisper.load_model("tiny")
+# Load faster-whisper model
+# You can use "small" for the model size, or specify the full model name
+model = WhisperModel("small", device="cpu", compute_type="int8")
 
 # In-memory storage for questions
 questions = [
@@ -59,9 +60,15 @@ def transcribe():
         temp_path = tmp.name
 
     try:
-        # Transcribe using Whisper
-        result = model.transcribe(audio=temp_path, fp16=False)
-        return jsonify({"result": result["text"]})
+        # Transcribe using faster-whisper
+        segments, info = model.transcribe(temp_path, beam_size=5)
+
+        # Extract text from segments
+        transcribed_text = ""
+        for segment in segments:
+            transcribed_text += segment.text
+
+        return jsonify({"result": transcribed_text.strip()})
     finally:
         os.remove(temp_path)
 
@@ -104,9 +111,16 @@ def submit_answer():
         temp_path = tmp.name
 
     try:
-        # Transcribe the audio
-        result = model.transcribe(audio=temp_path, fp16=False)
-        transcribed_text = result["text"]
+        # Transcribe the audio using faster-whisper
+        segments, info = model.transcribe(temp_path, beam_size=5)
+
+        # Extract text from segments
+        transcribed_text = ""
+        for segment in segments:
+            print(segment)
+            transcribed_text += segment.text
+
+        transcribed_text = transcribed_text.strip()
 
         # Calculate accuracy
         accuracy = calculate_accuracy(original_question, transcribed_text)
@@ -146,9 +160,15 @@ def audio_to_text():
         temp_path = tmp.name
 
     try:
-        # Transcribe using Whisper
-        result = model.transcribe(audio=temp_path, fp16=False)
-        return jsonify({"text": result["text"]})
+        # Transcribe using faster-whisper
+        segments, info = model.transcribe(temp_path, beam_size=5)
+
+        # Extract text from segments
+        transcribed_text = ""
+        for segment in segments:
+            transcribed_text += segment.text
+
+        return jsonify({"text": transcribed_text.strip()})
     finally:
         os.remove(temp_path)
 
@@ -199,9 +219,15 @@ def add_multiple_questions():
             temp_path = tmp.name
 
         try:
-            # Transcribe using Whisper
-            result = model.transcribe(audio=temp_path, fp16=False)
-            transcribed_text = result["text"].strip()
+            # Transcribe using faster-whisper
+            segments, info = model.transcribe(temp_path, beam_size=5)
+
+            # Extract text from segments
+            transcribed_text = ""
+            for segment in segments:
+                transcribed_text += segment.text
+
+            transcribed_text = transcribed_text.strip()
 
             if transcribed_text:
                 questions.append(transcribed_text)
@@ -250,9 +276,6 @@ def clear_questions():
     questions = []
     return jsonify({"success": True, "message": "All questions cleared"})
 
-
-# if __name__ == "__main__":
-#     app.run(host="0.0.0.0", port=5000, debug=True)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
